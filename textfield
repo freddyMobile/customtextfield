@@ -1,0 +1,123 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_ireli/constants/color_constants.dart';
+import 'package:email_validator/email_validator.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+
+class CustomTextField extends StatefulWidget {
+  GlobalKey? loginFormKey;
+  bool isEmailValidationEnabled;
+  bool isPhoneValidationEnabled;
+  String titleTextField;
+  bool isObscure;
+  TextEditingController controller;
+  int? maxLength;
+  String labelText;
+  bool isDateActive;
+  bool expand;
+  VoidCallback? suffixIconOnPressed;
+
+  CustomTextField({
+    super.key,
+    required this.titleTextField,
+    required this.controller,
+    required this.labelText,
+    this.maxLength = 100,
+    this.isDateActive = false,
+    this.isObscure = false,
+    this.expand = false,
+    this.isEmailValidationEnabled = false,
+    this.isPhoneValidationEnabled = false,
+    this.suffixIconOnPressed,
+    this.loginFormKey,
+  });
+
+  @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Text(
+            widget.titleTextField,
+            style: const TextStyle(
+                fontWeight: FontWeight.w400,
+                /*color: Colors.black,*/ fontSize: 16),
+          ),
+        ),
+        SizedBox(
+          width: double.infinity,
+          height: Get.height * 0.1,
+          child: Form(
+            key: widget.loginFormKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            child: TextFormField(
+              validator: (value) {
+                if (widget.isObscure) {
+                  if (value != '' && value!.length < 8) {
+                    return 'şifrə minimum 8 simvol olmalıdır!';
+                  } else if (int.tryParse(value.toString()) != null) {
+                    return 'şifrə yalnız rəqəm ola bilməz';
+                  } else if (value != '' &&
+                      !value!.contains(RegExp(r'[A-Z]'))) {
+                    return 'ən azı bir böyük simvol olmalıdır!';
+                  } else {
+                    return null;
+                  }
+                } else if (widget.isEmailValidationEnabled) {
+                  return value != '' && !EmailValidator.validate(value!)
+                      ? 'Düzgün mail ünvanı qeyd edin!'
+                      : null;
+                } else if (widget.isPhoneValidationEnabled) {
+                  if (value != '' && int.tryParse(value!) == null) {
+                    return 'nömrə yalnız rəqəmlərdən ibarət olmalıdır!';
+                  } else {
+                    return null;
+                  }
+                } else {
+                  return null;
+                }
+              },
+              obscureText: widget.isObscure,
+              maxLines: widget.isObscure ? 1 : null,
+              minLines: null,
+              expands: widget.expand,
+              maxLength: widget.expand ? null : widget.maxLength,
+              cursorColor: textPurpleColor,
+              onTapOutside: (event) {
+                FocusScope.of(context).unfocus();
+              },
+              controller: widget.controller,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: authTextFieldColor.withOpacity(0.2),
+                suffixIcon: widget.isDateActive
+                    ? InkWell(
+                        onTap: widget.suffixIconOnPressed,
+                        child: const Icon(Icons.date_range),
+                      )
+                    : null,
+
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                labelText: widget.labelText,
+
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: textPurpleColor)),
+                //enabledBorder: OutlineInputBorder(borderSide: BorderSide()),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
